@@ -2,7 +2,7 @@ namespace :nvm do
   task :validate do
     on release_roles(fetch(:nvm_roles)) do
       within release_path do
-        unless  test 'node', '--version'
+        unless test 'node', '--version'
           puts "node #{fetch(:nvm_node)} not installed"
           exit 1
         end

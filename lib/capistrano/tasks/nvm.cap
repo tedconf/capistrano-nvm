@@ -1,18 +1,11 @@
 namespace :nvm do
   task :validate do
     on release_roles(fetch(:nvm_roles)) do
-      nvm_node = fetch(:nvm_node)
-      if nvm_node.nil?
-        error "nvm: nvm_node is not set"
-        exit 1
-      end
-
-      nvm_node_path = fetch(:nvm_node_path)
-      nvm_node_path = [nvm_node_path] unless nvm_node_path.is_a?(Array)
-
-      unless test(nvm_node_path.map {|p| "[ -d #{p} ]" }.join(" || "))
-        error "nvm: #{nvm_node} is not installed or not found in any of #{nvm_node_path.join(" ")}"
-        exit 1
+      within release_path do
+        unless  test 'node', '--version'
+          puts "node #{fetch(:nvm_node)} not installed"
+          exit 1
+        end
       end
     end
   end
@@ -45,8 +38,8 @@ namespace :nvm do
 end
 
 Capistrano::DSL.stages.each do |stage|
-  after stage, 'nvm:validate'
   after stage, 'nvm:map_bins'
+  after stage, 'nvm:validate'
 end
 
 namespace :load do
@@ -65,7 +58,6 @@ namespace :load do
        fetch(:nvm_source_path, fetch(:nvm_path))
     }
     set :nvm_roles, fetch(:nvm_roles, :all)
-    set :nvm_node_path, -> { ["#{fetch(:nvm_path)}/#{fetch(:nvm_node)}", "#{fetch(:nvm_path)}/versions/node/#{fetch(:nvm_node)}"] }
     set :nvm_map_bins, %w{node npm}
   end
 end

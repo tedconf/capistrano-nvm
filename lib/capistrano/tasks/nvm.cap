@@ -2,7 +2,9 @@ namespace :nvm do
   task :validate do
     on release_roles(fetch(:nvm_roles)) do
       within release_path do
-        unless test 'node', '--version'
+        if test 'node', '--version'
+          puts "node #{fetch(:nvm_node)} is installed"
+        else
           puts "node #{fetch(:nvm_node)} not installed"
           exit 1
         end
@@ -38,8 +40,8 @@ namespace :nvm do
 end
 
 Capistrano::DSL.stages.each do |stage|
-  after stage, 'nvm:map_bins'
-  after stage, 'nvm:validate'
+  before 'deploy:updated', 'nvm:map_bins'
+  before 'deploy:updated', 'nvm:validate'
 end
 
 namespace :load do

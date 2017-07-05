@@ -1,18 +1,18 @@
 namespace :nvm do
-  task :validate do
+  task :validate => :map_bins do
     on release_roles(fetch(:nvm_roles)) do
       within release_path do
         if test 'node', '--version'
-          puts "node #{fetch(:nvm_node)} is installed"
+          info "node #{fetch(:nvm_node)} is installed"
         else
-          puts "node #{fetch(:nvm_node)} not installed"
+          warn "node #{fetch(:nvm_node)} not installed"
           exit 1
         end
       end
     end
   end
 
-  task :node_version do
+  task :node_version => :map_bins do
     on release_roles(fetch(:nvm_roles)) do
       within release_path do
         execute :node, "--version"
@@ -20,7 +20,7 @@ namespace :nvm do
     end
   end
 
-  task :npm_version do
+  task :npm_version => :map_bins do
     on release_roles(fetch(:nvm_roles)) do
       within release_path do
         execute :npm, "--version"

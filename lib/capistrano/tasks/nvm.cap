@@ -32,34 +32,27 @@ namespace :nvm do
     SSHKit.config.default_env.merge!({
       nvm_dir: fetch(:nvm_path)
     })
-    nvm_prefix = fetch(:nvm_prefix, -> { "#{fetch(:nvm_source_path)}/nvm-exec" } )
+    nvm_prefix = fetch(:nvm_prefix, -> { "#{fetch(:nvm_path)}/nvm-exec" } )
     fetch(:nvm_map_bins).each do |command|
       SSHKit.config.command_map.prefix[command.to_sym].unshift(nvm_prefix)
     end
   end
-end
 
-Capistrano::DSL.stages.each do |stage|
-  before 'deploy:updated', 'nvm:map_bins'
-  before 'deploy:updated', 'nvm:validate'
-end
-
-namespace :load do
-  task :defaults do
-
+  task :configure do
     set :nvm_path, -> {
-      nvm_path = fetch(:nvm_custom_path)
-      nvm_path ||= if fetch(:nvm_type, :user) == :system
+      system_or_user_path = if fetch(:nvm_type, :user) == :system
         "/usr/local/nvm"
       else
         "$HOME/.nvm"
       end
-    }
-
-    set :nvm_source_path, -> {
-       fetch(:nvm_source_path, fetch(:nvm_path))
+      fetch(:nvm_custom_path, system_or_user_path)
     }
     set :nvm_roles, fetch(:nvm_roles, :all)
     set :nvm_map_bins, %w{node npm}
   end
+
 end
+
+before 'deploy:starting', 'nvm:configure'
+before 'deploy:updated',  'nvm:map_bins'
+before 'deploy:updated',  'nvm:validate'

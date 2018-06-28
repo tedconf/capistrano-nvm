@@ -41,10 +41,10 @@ namespace :nvm do
   task :configure do
     set :nvm_path, -> {
       system_or_user_path = if fetch(:nvm_type, :user) == :system
-        "/usr/local/nvm"
-      else
-        "$HOME/.nvm"
-      end
+                             "/usr/local/nvm"
+                            else
+                              "$HOME/.nvm"
+                            end
       fetch(:nvm_custom_path, system_or_user_path)
     }
     set :nvm_roles, fetch(:nvm_roles, :all)
